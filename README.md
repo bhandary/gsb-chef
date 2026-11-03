@@ -59,7 +59,16 @@ Sign-up, verification, and sign-in are handled by the auth server on http://127.
 - After verification, the browser gets an httpOnly cookie named `gsb_session`. The server stores only the SHA-256 hash of that session token. Sessions last 14 days.
 - Passwords are not logged. With SMTP unset, the auth log contains the verification link and the recipient address.
 
-Leave `SMTP_HOST` empty to print the link locally. To send mail, set `SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_FROM`, and `SMTP_TLS` in `.env`. Any SMTP server works. No hosted email provider is selected.
+Leave `SMTP_HOST` empty to print the link locally. `python -m auth_app` reads those variables from `.env`. To send with Resend, set:
+
+- `SMTP_HOST=smtp.resend.com`
+- `SMTP_PORT=587`
+- `SMTP_USERNAME=resend`
+- `SMTP_PASSWORD` to the Resend API key
+- `SMTP_FROM` to an address on a domain you have verified in Resend, for example `GSB Chef <no-reply@yourdomain.com>`
+- `SMTP_TLS=true`, which is STARTTLS on port 587, not implicit SSL
+
+The API key is not logged. Replace `yourdomain.com` before sending.
 
 Signing up again with the same email and password before verification sends a new link. After verification, sign in.
 

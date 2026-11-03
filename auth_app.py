@@ -1,7 +1,10 @@
 import logging
 import os
 
+from dotenv import load_dotenv
 from starlette.applications import Starlette
+
+load_dotenv()
 from starlette.requests import Request
 from starlette.responses import JSONResponse
 from starlette.routing import Route
