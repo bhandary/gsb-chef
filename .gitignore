@@ -6,5 +6,6 @@ __pycache__/
 .hypothesis/
 .langgraph_api/
 data/
+verification-runs/
 *.db
 .mypy_cache/
