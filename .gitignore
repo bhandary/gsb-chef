@@ -3,6 +3,7 @@
 __pycache__/
 *.py[cod]
 .pytest_cache/
+.hypothesis/
 .langgraph_api/
 data/
 *.db
