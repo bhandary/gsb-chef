@@ -68,9 +68,9 @@ From the repository root, with the project virtualenv:
 
 ## Last confirmed
 
-Last confirmed commit: `LAST_CONFIRMED_COMMIT`
+Last confirmed commit: `3096f353bddca63d0ddd2e650ae7813357e878d1`
 
-That commit is the tree this command was run against after the scratch edit below was reverted. `auth.py` in that tree still has both used-token guards, the expiry check before either update, `hash_token` on insert, and `hash_password` on signup. Re-run the command after you change `auth.py`, and replace this hash with the commit you just confirmed. Do not leave a hash here for a tree the command has not passed on.
+The command was run on that tree after the scratch edit below was reverted: 16 passed. `auth.py` there still has both used-token guards, the expiry check before either update, `hash_token` on insert, and `hash_password` on signup. Re-run the command after you change `auth.py`, and replace this hash with the commit you just confirmed. Do not leave a hash here for a tree the command has not passed on.
 
 ## When the command fails
 
