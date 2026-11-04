@@ -144,7 +144,6 @@ const StreamSession = ({
             </p>
           ),
           duration: 10000,
-          richColors: true,
           closeButton: true,
         });
       }
@@ -212,11 +211,11 @@ export const StreamProvider: React.FC<{ children: ReactNode }> = ({
   if (!finalApiUrl || !finalAssistantId) {
     return (
       <div className="flex min-h-screen w-full items-center justify-center p-4">
-        <div className="animate-in fade-in-0 zoom-in-95 bg-background flex max-w-3xl flex-col rounded-lg border shadow-lg">
+        <div className="animate-in fade-in-0 zoom-in-95 bg-card flex max-w-3xl flex-col rounded-lg border shadow-lg">
           <div className="mt-14 flex flex-col gap-2 border-b p-6">
             <div className="flex flex-col items-start gap-2">
               <LangGraphLogoSVG className="h-7" />
-              <h1 className="text-xl font-semibold tracking-tight">
+              <h1 className="font-heading text-xl font-semibold tracking-tight">
                 GSB Chef
               </h1>
             </div>
@@ -250,7 +249,7 @@ export const StreamProvider: React.FC<{ children: ReactNode }> = ({
           >
             <div className="flex flex-col gap-2">
               <Label htmlFor="apiUrl">
-                Deployment URL<span className="text-rose-500">*</span>
+                Deployment URL<span className="text-destructive">*</span>
               </Label>
               <p className="text-muted-foreground text-sm">
                 This is the URL of your LangGraph deployment. Can be a local, or
@@ -259,7 +258,7 @@ export const StreamProvider: React.FC<{ children: ReactNode }> = ({
               <Input
                 id="apiUrl"
                 name="apiUrl"
-                className="bg-background"
+                className="bg-card"
                 defaultValue={apiUrl || DEFAULT_API_URL}
                 required
               />
@@ -267,7 +266,7 @@ export const StreamProvider: React.FC<{ children: ReactNode }> = ({
 
             <div className="flex flex-col gap-2">
               <Label htmlFor="assistantId">
-                Assistant / Graph ID<span className="text-rose-500">*</span>
+                Assistant / Graph ID<span className="text-destructive">*</span>
               </Label>
               <p className="text-muted-foreground text-sm">
                 This is the ID of the graph (can be the graph name), or
@@ -277,7 +276,7 @@ export const StreamProvider: React.FC<{ children: ReactNode }> = ({
               <Input
                 id="assistantId"
                 name="assistantId"
-                className="bg-background"
+                className="bg-card"
                 defaultValue={assistantId || DEFAULT_ASSISTANT_ID}
                 required
               />
@@ -295,7 +294,7 @@ export const StreamProvider: React.FC<{ children: ReactNode }> = ({
                 id="apiKey"
                 name="apiKey"
                 defaultValue={apiKey ?? ""}
-                className="bg-background"
+                className="bg-card"
                 placeholder="lsv2_pt_..."
               />
             </div>
@@ -311,7 +310,7 @@ export const StreamProvider: React.FC<{ children: ReactNode }> = ({
                 id="openai"
                 name="openai"
                 defaultValue={providerKeys.openai}
-                className="bg-background"
+                className="bg-card"
                 placeholder="sk-..."
                 autoComplete="off"
               />
@@ -327,7 +326,7 @@ export const StreamProvider: React.FC<{ children: ReactNode }> = ({
                 id="tavily"
                 name="tavily"
                 defaultValue={providerKeys.tavily}
-                className="bg-background"
+                className="bg-card"
                 placeholder="tvly-..."
                 autoComplete="off"
               />

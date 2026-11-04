@@ -5,74 +5,84 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.87 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
+  /* Sampled from the Stacks reference: page #f1f3f0, card #ffffff,
+     text #1a1817, secondary text #686868, plum #411b28, border #e1e1e1,
+     pill #f3f3f3, hover #ebebeb, gold stars #feb100.
+     #9c9591 (the small "RECENTLY SHELVED" label) is 2.64:1 on the page,
+     so secondary text uses #686868 (4.99:1) instead. */
+  --background: #f1f3f0;
+  --foreground: #1a1817;
+  --card: #ffffff;
+  --card-foreground: #1a1817;
+  --popover: #ffffff;
+  --popover-foreground: #1a1817;
+  --primary: #411b28;
+  --primary-foreground: #ffffff;
+  --secondary: #f3f3f3;
+  --secondary-foreground: #1a1817;
+  --muted: #f3f3f3;
+  --muted-foreground: #686868;
+  --accent: #ebebeb;
+  --accent-foreground: #1a1817;
+  --destructive: #e11d48;
+  --destructive-foreground: #ffffff;
+  --border: #e1e1e1;
+  --input: #e1e1e1;
+  --ring: #411b28;
+  --gold: #feb100;
+  --chart-1: #411b28;
+  --chart-2: #686868;
+  --chart-3: #1a1817;
+  --chart-4: #feb100;
+  --chart-5: #f3f3f3;
   --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.87 0 0);
+  --sidebar: #f1f3f0;
+  --sidebar-foreground: #1a1817;
+  --sidebar-primary: #411b28;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #ebebeb;
+  --sidebar-accent-foreground: #1a1817;
+  --sidebar-border: #e1e1e1;
+  --sidebar-ring: #411b28;
 }
 
+/* Nothing in the UI adds the .dark class. These tokens keep a warm inversion
+   of the sampled palette if that class is set. Primary is the light edge of
+   the plum spine so a filled button stays visible on the dark page. */
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.145 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.145 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.985 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.396 0.141 25.723);
-  --destructive-foreground: oklch(0.637 0.237 25.331);
-  --border: oklch(0.269 0 0);
-  --input: oklch(0.269 0 0);
-  --ring: oklch(0.439 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(0.269 0 0);
-  --sidebar-ring: oklch(0.439 0 0);
+  --background: #1a1817;
+  --foreground: #f1f3f0;
+  --card: #262220;
+  --card-foreground: #f1f3f0;
+  --popover: #262220;
+  --popover-foreground: #f1f3f0;
+  --primary: #d8c1c8;
+  --primary-foreground: #1a1817;
+  --secondary: #3a3336;
+  --secondary-foreground: #f1f3f0;
+  --muted: #2a2624;
+  --muted-foreground: #c2bfbb;
+  --accent: #3a3336;
+  --accent-foreground: #f1f3f0;
+  --destructive: #fb7185;
+  --destructive-foreground: #1a1817;
+  --border: #3a3336;
+  --input: #3a3336;
+  --ring: #feb100;
+  --gold: #feb100;
+  --chart-1: #d8c1c8;
+  --chart-2: #c2bfbb;
+  --chart-3: #f1f3f0;
+  --chart-4: #feb100;
+  --chart-5: #3a3336;
+  --sidebar: #1a1817;
+  --sidebar-foreground: #f1f3f0;
+  --sidebar-primary: #d8c1c8;
+  --sidebar-primary-foreground: #1a1817;
+  --sidebar-accent: #3a3336;
+  --sidebar-accent-foreground: #f1f3f0;
+  --sidebar-border: #3a3336;
+  --sidebar-ring: #feb100;
 }
 
 @theme inline {
@@ -95,6 +105,7 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-gold: var(--gold);
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
@@ -121,6 +132,10 @@
 
   body {
     @apply bg-background text-foreground;
+  }
+
+  .font-heading {
+    font-family: var(--font-newsreader), "Liberation Serif", Palatino, serif;
   }
 
   :root {

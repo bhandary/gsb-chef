@@ -40,7 +40,7 @@ export default function VerifyPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center p-6">
-      <p className="max-w-md text-center text-sm text-gray-700">{message}</p>
+      <p className="text-muted-foreground max-w-md text-center text-sm">{message}</p>
     </div>
   );
 }

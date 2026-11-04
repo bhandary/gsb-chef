@@ -57,9 +57,9 @@ export function AuthScreen({
 
   return (
     <div className="flex min-h-screen w-full items-center justify-center p-4">
-      <div className="bg-background flex w-full max-w-md flex-col rounded-lg border shadow-lg">
+      <div className="bg-card flex w-full max-w-md flex-col rounded-lg border shadow-lg">
         <div className="flex flex-col gap-2 border-b p-6">
-          <h1 className="text-xl font-semibold tracking-tight">GSB Chef</h1>
+          <h1 className="font-heading text-xl font-semibold tracking-tight">GSB Chef</h1>
           <p className="text-muted-foreground text-sm">
             Create an account and verify your email before asking for recipes.
             Passwords are stored as Argon2id hashes.
@@ -101,7 +101,7 @@ export function AuthScreen({
               type="email"
               autoComplete="email"
               required
-              className="bg-background"
+              className="bg-card"
             />
           </div>
           <div className="flex flex-col gap-2">
@@ -112,11 +112,11 @@ export function AuthScreen({
               autoComplete={mode === "signup" ? "new-password" : "current-password"}
               required
               minLength={8}
-              className="bg-background"
+              className="bg-card"
             />
           </div>
-          {error ? <p className="text-sm text-rose-600">{error}</p> : null}
-          {notice ? <p className="text-sm text-gray-700">{notice}</p> : null}
+          {error ? <p className="text-sm text-destructive">{error}</p> : null}
+          {notice ? <p className="text-muted-foreground text-sm">{notice}</p> : null}
           <Button
             type="submit"
             disabled={pending}

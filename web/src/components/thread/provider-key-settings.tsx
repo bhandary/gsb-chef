@@ -36,7 +36,7 @@ export function ProviderKeySettings() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
           <form
             onSubmit={onSubmit}
-            className="bg-background flex w-full max-w-md flex-col gap-4 rounded-lg border p-6 shadow-lg"
+            className="bg-card flex w-full max-w-md flex-col gap-4 rounded-lg border p-6 shadow-lg"
           >
             <div className="flex flex-col gap-1">
               <h2 className="text-lg font-semibold">Recipe API keys</h2>
@@ -55,7 +55,7 @@ export function ProviderKeySettings() {
                 defaultValue={keys.openai}
                 autoComplete="off"
                 placeholder="sk-..."
-                className="bg-background"
+                className="bg-card"
               />
             </div>
             <div className="flex flex-col gap-2">
@@ -66,7 +66,7 @@ export function ProviderKeySettings() {
                 defaultValue={keys.tavily}
                 autoComplete="off"
                 placeholder="tvly-..."
-                className="bg-background"
+                className="bg-card"
               />
             </div>
             <div className="flex justify-end gap-2">
