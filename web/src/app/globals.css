@@ -1,0 +1,166 @@
+@import "tailwindcss";
+
+@plugin "tailwindcss-animate";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  /* Sampled from the Stacks reference: page #f1f3f0, card #ffffff,
+     text #1a1817, secondary text #686868, plum #411b28, border #e1e1e1,
+     pill #f3f3f3, hover #ebebeb, gold stars #feb100.
+     #9c9591 (the small "RECENTLY SHELVED" label) is 2.64:1 on the page,
+     so secondary text uses #686868 (4.99:1) instead. */
+  --background: #f1f3f0;
+  --foreground: #1a1817;
+  --card: #ffffff;
+  --card-foreground: #1a1817;
+  --popover: #ffffff;
+  --popover-foreground: #1a1817;
+  --primary: #411b28;
+  --primary-foreground: #ffffff;
+  --secondary: #f3f3f3;
+  --secondary-foreground: #1a1817;
+  --muted: #f3f3f3;
+  --muted-foreground: #686868;
+  --accent: #ebebeb;
+  --accent-foreground: #1a1817;
+  --destructive: #e11d48;
+  --destructive-foreground: #ffffff;
+  --border: #e1e1e1;
+  --input: #e1e1e1;
+  --ring: #411b28;
+  --gold: #feb100;
+  --chart-1: #411b28;
+  --chart-2: #686868;
+  --chart-3: #1a1817;
+  --chart-4: #feb100;
+  --chart-5: #f3f3f3;
+  --radius: 0.625rem;
+  --sidebar: #f1f3f0;
+  --sidebar-foreground: #1a1817;
+  --sidebar-primary: #411b28;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #ebebeb;
+  --sidebar-accent-foreground: #1a1817;
+  --sidebar-border: #e1e1e1;
+  --sidebar-ring: #411b28;
+}
+
+/* Nothing in the UI adds the .dark class. These tokens keep a warm inversion
+   of the sampled palette if that class is set. Primary is the light edge of
+   the plum spine so a filled button stays visible on the dark page. */
+.dark {
+  --background: #1a1817;
+  --foreground: #f1f3f0;
+  --card: #262220;
+  --card-foreground: #f1f3f0;
+  --popover: #262220;
+  --popover-foreground: #f1f3f0;
+  --primary: #d8c1c8;
+  --primary-foreground: #1a1817;
+  --secondary: #3a3336;
+  --secondary-foreground: #f1f3f0;
+  --muted: #2a2624;
+  --muted-foreground: #c2bfbb;
+  --accent: #3a3336;
+  --accent-foreground: #f1f3f0;
+  --destructive: #fb7185;
+  --destructive-foreground: #1a1817;
+  --border: #3a3336;
+  --input: #3a3336;
+  --ring: #feb100;
+  --gold: #feb100;
+  --chart-1: #d8c1c8;
+  --chart-2: #c2bfbb;
+  --chart-3: #f1f3f0;
+  --chart-4: #feb100;
+  --chart-5: #3a3336;
+  --sidebar: #1a1817;
+  --sidebar-foreground: #f1f3f0;
+  --sidebar-primary: #d8c1c8;
+  --sidebar-primary-foreground: #1a1817;
+  --sidebar-accent: #3a3336;
+  --sidebar-accent-foreground: #f1f3f0;
+  --sidebar-border: #3a3336;
+  --sidebar-ring: #feb100;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-gold: var(--gold);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  .font-heading {
+    font-family: var(--font-newsreader), "Liberation Serif", Palatino, serif;
+  }
+
+  :root {
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+  }
+
+  .dark {
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+  }
+}
+
+@layer utilities {
+  .shadow-inner-right {
+    box-shadow: inset -9px 0 6px -1px rgb(0 0 0 / 0.02);
+  }
+
+  .shadow-inner-left {
+    box-shadow: inset 9px 0 6px -1px rgb(0 0 0 / 0.02);
+  }
+}

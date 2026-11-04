@@ -1,0 +1,15 @@
+{
+  "dependencies": ["."],
+  "graphs": {
+    "agent": "./gsb_chef.py:agent"
+  },
+  "auth": {
+    "path": "./server_auth.py:auth"
+  },
+  "http": {
+    "configurable_headers": {
+      "excludes": ["x-openai-api-key", "x-tavily-api-key"]
+    }
+  },
+  "env": ".env"
+}
