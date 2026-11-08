@@ -1,9 +1,28 @@
 "use client";
 
 import { ReactNode, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { AuthScreen } from "@/components/auth/auth-screen";
 
-export function AuthGate({ children }: { children: ReactNode }) {
+function GoHome() {
+  const router = useRouter();
+  useEffect(() => {
+    router.replace("/");
+  }, [router]);
+  return (
+    <div className="text-muted-foreground flex min-h-screen items-center justify-center">
+      Loading…
+    </div>
+  );
+}
+
+export function AuthGate({
+  children,
+  initialMode = "signup",
+}: {
+  children?: ReactNode;
+  initialMode?: "signup" | "login";
+}) {
   const [email, setEmail] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
 
@@ -35,7 +54,15 @@ export function AuthGate({ children }: { children: ReactNode }) {
     );
   }
   if (!email) {
-    return <AuthScreen onAuthenticated={setEmail} />;
+    return (
+      <AuthScreen
+        initialMode={initialMode}
+        onAuthenticated={setEmail}
+      />
+    );
+  }
+  if (!children) {
+    return <GoHome />;
   }
   return children;
 }

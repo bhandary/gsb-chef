@@ -1,11 +1,37 @@
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import { initApiPassthrough } from "langgraph-nextjs-api-passthrough";
+
+import { authorizeAgentProxy } from "@/lib/agent-proxy-auth.mjs";
 
 // This file acts as a proxy for requests to your LangGraph server.
 // Read the [Going to Production](https://github.com/langchain-ai/agent-chat-ui?tab=readme-ov-file#going-to-production) section for more information.
 
-export const { GET, POST, PUT, PATCH, DELETE, OPTIONS, runtime } =
-  initApiPassthrough({
-    apiUrl: process.env.LANGGRAPH_API_URL ?? "remove-me", // default, if not defined it will attempt to read process.env.LANGGRAPH_API_URL
-    apiKey: process.env.LANGSMITH_API_KEY ?? "remove-me", // default, if not defined it will attempt to read process.env.LANGSMITH_API_KEY
-    runtime: "edge", // default
+const passthrough = initApiPassthrough({
+  apiUrl: process.env.LANGGRAPH_API_URL ?? "remove-me", // default, if not defined it will attempt to read process.env.LANGGRAPH_API_URL
+  apiKey: process.env.LANGSMITH_API_KEY ?? "remove-me", // default, if not defined it will attempt to read process.env.LANGSMITH_API_KEY
+  runtime: "edge", // default
+});
+
+type Handler = (req: NextRequest) => Promise<Response> | Response;
+
+async function guarded(request: NextRequest, handler: Handler) {
+  const decision = await authorizeAgentProxy({
+    cookieHeader: request.headers.get("cookie"),
+    authApiUrl: process.env.AUTH_API_URL || "http://127.0.0.1:8000",
+    fetchImpl: fetch,
   });
+  if (!decision.ok) {
+    return NextResponse.json(decision.body, { status: decision.status });
+  }
+  return handler(request);
+}
+
+export const GET = (request: NextRequest) => guarded(request, passthrough.GET);
+export const POST = (request: NextRequest) => guarded(request, passthrough.POST);
+export const PUT = (request: NextRequest) => guarded(request, passthrough.PUT);
+export const PATCH = (request: NextRequest) => guarded(request, passthrough.PATCH);
+export const DELETE = (request: NextRequest) =>
+  guarded(request, passthrough.DELETE);
+export const OPTIONS = passthrough.OPTIONS;
+export const runtime = "edge";

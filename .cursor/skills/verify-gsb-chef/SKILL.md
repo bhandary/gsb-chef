@@ -125,7 +125,9 @@ Stable handles:
 | Dismiss the dialog | button `Cancel` |
 | End the session | button `Sign out` |
 
-Routes the browser actually uses: `/`, `/verify`, `POST /api/auth/signup`, `POST /api/auth/login`, `POST /api/auth/verify`, `POST /api/auth/logout`, `GET /api/auth/me`. The Next handlers proxy to `http://127.0.0.1:8000/auth/signup`, `/auth/login`, `/auth/verify`, `/auth/logout`, and `/auth/me`. The session cookie is `gsb_session`, httpOnly, so `document.cookie` does not show it. Read it from the Playwright cookie jar.
+Routes the browser actually uses: `/`, `/login`, `/verify`, `POST /api/auth/signup`, `POST /api/auth/login`, `POST /api/auth/verify`, `POST /api/auth/logout`, `GET /api/auth/me`, `GET /api/auth/google`, `GET /api/auth/google/start`, and `GET /api/auth/google/callback`. The Next handlers proxy to the auth server. The session cookie is `gsb_session`, httpOnly, so `document.cookie` does not show it. Read it from the Playwright cookie jar.
+
+`/login` is the same account card as `/`, opened in Sign in mode. The link `Sign in with Google` is rendered only when `GOOGLE_CLIENT_ID` is set. `launch.sh` clears that variable, so the signup proof does not show the button. `GET /api/ok` without a cookie returns 401 `{"error":"Sign in required."}`. Direct `GET http://127.0.0.1:2024/ok` still returns 200.
 
 The sign-up journey is one command:
 

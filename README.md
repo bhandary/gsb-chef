@@ -70,9 +70,22 @@ Leave `SMTP_HOST` empty to print the link locally. `python -m auth_app` reads th
 
 The API key is not logged. Replace `yourdomain.com` before sending.
 
-Signing up again with the same email and password before verification sends a new link. After verification, sign in.
+Signing up again with the same email and password before verification sends a new link. After verification, sign in at `/` or `/login`. Email and password sign-in is unchanged.
 
-The chat page requires a verified session. The LangGraph port on this machine is the local agent API used by the UI; it is not a separate public login wall.
+Google sign-in uses Authlib's OpenID Connect authorization-code flow with PKCE. The auth server checks `state`, `nonce`, and the ID token signature, issuer (`https://accounts.google.com`), audience, and expiry against Google's discovery document, and it requires `email_verified`. A verified Google email is created or linked to the password account with that email, then the same `gsb_session` cookie is set. Leave `GOOGLE_CLIENT_ID` empty to hide the button. Set `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, and `APP_BASE_URL`. The redirect URI is `${APP_BASE_URL}/api/auth/google/callback` on the web origin, because the browser never calls the auth port directly. Do not set `GOOGLE_DISCOVERY_URL`; it exists so tests can serve a local discovery document.
+
+In Google Cloud Console:
+
+1. Create or select a project. Open APIs & Services → OAuth consent screen. Choose External (or Internal for a Workspace org). Set the app name to GSB Chef, add a support email, and add the scopes `openid`, `email`, and `profile` (the default ones are enough). If the app stays in Testing, add the Google accounts that may sign in as test users.
+2. Open APIs & Services → Credentials → Create credentials → OAuth client ID → Web application.
+3. Under Authorized redirect URIs, add these exactly, with no trailing slash:
+   - `http://127.0.0.1:3000/api/auth/google/callback`
+   - `http://localhost:3000/api/auth/google/callback`
+   - `https://web-production-346c6.up.railway.app/api/auth/google/callback`
+4. Copy the client ID into `GOOGLE_CLIENT_ID` and the client secret into `GOOGLE_CLIENT_SECRET`. Do not commit them.
+5. Set `APP_BASE_URL` to the origin the browser uses: `http://127.0.0.1:3000` or `http://localhost:3000` locally, and `https://web-production-346c6.up.railway.app` on Railway. The auth server builds the redirect URI from that value.
+
+The chat page requires a verified session. The Next.js `/api` proxy checks `gsb_session` with the auth server before it forwards anything to LangGraph, and it returns 401 `{"error":"Sign in required."}` when the cookie is missing or rejected. The LangGraph port itself still accepts requests that reach it directly; do not expose that port.
 
 ## API keys
 

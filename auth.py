@@ -63,9 +63,10 @@ def ensure_schema(conn: sqlite3.Connection) -> None:
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY,
             email TEXT NOT NULL UNIQUE,
-            password_hash TEXT NOT NULL,
+            password_hash TEXT,
             email_verified_at TEXT,
-            created_at TEXT NOT NULL
+            created_at TEXT NOT NULL,
+            google_sub TEXT
         );
 
         CREATE TABLE IF NOT EXISTS email_verification_tokens (
@@ -86,6 +87,16 @@ def ensure_schema(conn: sqlite3.Connection) -> None:
         );
         """
     )
+    columns = {row[1] for row in conn.execute("PRAGMA table_info(users)")}
+    if "google_sub" not in columns:
+        conn.execute("ALTER TABLE users ADD COLUMN google_sub TEXT")
+    conn.execute(
+        """
+        CREATE UNIQUE INDEX IF NOT EXISTS users_google_sub
+        ON users(google_sub) WHERE google_sub IS NOT NULL
+        """
+    )
+    conn.commit()
 
 
 def _now(now: datetime | None = None) -> datetime:
@@ -299,6 +310,81 @@ def _create_session(
     return token
 
 
+def _password_column_not_null(conn: sqlite3.Connection) -> bool:
+    for column in conn.execute("PRAGMA table_info(users)"):
+        if column[1] == "password_hash":
+            return bool(column[3])
+    return False
+
+
+def login_with_google(email: str, google_sub: str) -> dict[str, str]:
+    """Create or link a user from a verified Google identity and start a session."""
+    cleaned = normalize_email(email)
+    subject = google_sub.strip()
+    if not subject or len(subject) > 255:
+        raise AuthError("invalid", "Google did not return an account id.", 403)
+    conn = connect()
+    try:
+        user = conn.execute(
+            "SELECT id, email, google_sub FROM users WHERE email = ?",
+            (cleaned,),
+        ).fetchone()
+        taken = conn.execute(
+            "SELECT id FROM users WHERE google_sub = ?",
+            (subject,),
+        ).fetchone()
+        if taken is not None and (user is None or taken["id"] != user["id"]):
+            raise AuthError(
+                "conflict",
+                "This Google account is already linked to another email.",
+                409,
+            )
+        now = _iso(_now())
+        if user is None:
+            password_hash = (
+                hash_password(secrets.token_urlsafe(32))
+                if _password_column_not_null(conn)
+                else None
+            )
+            try:
+                cursor = conn.execute(
+                    """
+                    INSERT INTO users
+                        (email, password_hash, email_verified_at, created_at, google_sub)
+                    VALUES (?, ?, ?, ?, ?)
+                    """,
+                    (cleaned, password_hash, now, now, subject),
+                )
+            except sqlite3.IntegrityError as exc:
+                raise AuthError(
+                    "conflict",
+                    "This Google account is already linked to another email.",
+                    409,
+                ) from exc
+            user_id = int(cursor.lastrowid)
+        else:
+            linked = user["google_sub"]
+            if linked and linked != subject:
+                raise AuthError(
+                    "conflict",
+                    "This email is linked to a different Google account.",
+                    409,
+                )
+            conn.execute(
+                """
+                UPDATE users
+                SET google_sub = ?, email_verified_at = COALESCE(email_verified_at, ?)
+                WHERE id = ?
+                """,
+                (subject, now, user["id"]),
+            )
+            user_id = int(user["id"])
+        token = _create_session(conn, user_id)
+        return {"email": cleaned, "token": token}
+    finally:
+        conn.close()
+
+
 def login(email: str, password: str) -> dict[str, str]:
     cleaned = normalize_email(email)
     conn = connect()
@@ -307,8 +393,16 @@ def login(email: str, password: str) -> dict[str, str]:
             "SELECT id, email, password_hash, email_verified_at FROM users WHERE email = ?",
             (cleaned,),
         ).fetchone()
-        password_hash = user["password_hash"] if user is not None else _dummy_hash()
-        if not verify_password(password_hash, password) or user is None:
+        password_hash = (
+            user["password_hash"]
+            if user is not None and user["password_hash"]
+            else _dummy_hash()
+        )
+        if (
+            not verify_password(password_hash, password)
+            or user is None
+            or not user["password_hash"]
+        ):
             raise AuthError("invalid", "Invalid email or password.", 401)
         if not user["email_verified_at"]:
             raise AuthError(

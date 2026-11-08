@@ -93,6 +93,10 @@ status, body = fetch(data["urls"]["web"] + "/api/auth/me")
 if status != 401 or json.loads(body).get("error") != "Sign in required.":
     problems.append(f"web /api/auth/me returned {status} {body[:120]!r}")
 
+status, body = fetch(data["urls"]["web"] + "/api/ok")
+if status != 401 or json.loads(body).get("error") != "Sign in required.":
+    problems.append(f"web /api/ok without a session returned {status} {body[:120]!r}")
+
 if problems:
     print("DOCTOR FAIL")
     for item in problems:

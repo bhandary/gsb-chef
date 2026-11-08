@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,13 +8,37 @@ import { PasswordInput } from "@/components/ui/password-input";
 
 export function AuthScreen({
   onAuthenticated,
+  initialMode = "signup",
 }: {
   onAuthenticated: (email: string) => void;
+  initialMode?: "signup" | "login";
 }) {
-  const [mode, setMode] = useState<"signup" | "login">("signup");
+  const [mode, setMode] = useState<"signup" | "login">(initialMode);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [pending, setPending] = useState(false);
+  const [googleEnabled, setGoogleEnabled] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const message = params.get("google_error");
+    if (message) {
+      setError(message);
+      params.delete("google_error");
+      const next = params.toString();
+      window.history.replaceState(
+        null,
+        "",
+        next ? `${window.location.pathname}?${next}` : window.location.pathname,
+      );
+    }
+    fetch("/api/auth/google")
+      .then((response) => (response.ok ? response.json() : null))
+      .then((body: { enabled?: boolean } | null) => {
+        setGoogleEnabled(Boolean(body?.enabled));
+      })
+      .catch(() => setGoogleEnabled(false));
+  }, []);
 
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -123,6 +147,15 @@ export function AuthScreen({
           >
             {pending ? "Please wait" : mode === "signup" ? "Create account" : "Sign in"}
           </Button>
+          {googleEnabled ? (
+            <Button
+              variant="outline"
+              className="bg-card"
+              asChild
+            >
+              <a href="/api/auth/google/start">Sign in with Google</a>
+            </Button>
+          ) : null}
         </form>
       </div>
     </div>

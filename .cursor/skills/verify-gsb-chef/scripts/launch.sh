@@ -117,6 +117,7 @@ fail() {
 
 cd "$ROOT"
 SMTP_HOST= SMTP_PASSWORD= APP_BASE_URL=http://127.0.0.1:3000 \
+  GOOGLE_CLIENT_ID= GOOGLE_CLIENT_SECRET= GOOGLE_DISCOVERY_URL= \
   GSB_AUTH_DB="$RUN/data/auth.db" AUTH_HOST=127.0.0.1 AUTH_PORT=8000 \
   "$ROOT/.venv/bin/python" -m auth_app >>"$AUTH_LOG" 2>&1 &
 AUTH_PID=$!
