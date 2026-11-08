@@ -18,7 +18,6 @@ import {
 import { useQueryState } from "nuqs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { LangGraphLogoSVG } from "@/components/icons/langgraph";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { ArrowRight } from "lucide-react";
@@ -136,7 +135,7 @@ const StreamSession = ({
   useEffect(() => {
     checkGraphStatus(apiUrl, apiKey, authScheme).then((ok) => {
       if (!ok) {
-        toast.error("Failed to connect to LangGraph server", {
+        toast.error("Failed to connect to the recipe server", {
           description: () => (
             <p>
               Please ensure your graph is running at <code>{apiUrl}</code> and
@@ -214,14 +213,13 @@ export const StreamProvider: React.FC<{ children: ReactNode }> = ({
         <div className="animate-in fade-in-0 zoom-in-95 bg-card flex max-w-3xl flex-col rounded-lg border shadow-lg">
           <div className="mt-14 flex flex-col gap-2 border-b p-6">
             <div className="flex flex-col items-start gap-2">
-              <LangGraphLogoSVG className="h-7" />
               <h1 className="font-heading text-xl font-semibold tracking-tight">
                 GSB Chef
               </h1>
             </div>
             <p className="text-muted-foreground">
-              Connect to the local LangGraph server, then ask for recipes from
-              the ingredients you have left over.
+              Connect to the recipe server, then ask for recipes from the
+              ingredients you have left over.
             </p>
           </div>
           <form
@@ -252,7 +250,7 @@ export const StreamProvider: React.FC<{ children: ReactNode }> = ({
                 Deployment URL<span className="text-destructive">*</span>
               </Label>
               <p className="text-muted-foreground text-sm">
-                This is the URL of your LangGraph deployment. Can be a local, or
+                This is the URL of the recipe server. Can be a local, or
                 production deployment.
               </p>
               <Input
@@ -283,19 +281,17 @@ export const StreamProvider: React.FC<{ children: ReactNode }> = ({
             </div>
 
             <div className="flex flex-col gap-2">
-              <Label htmlFor="apiKey">LangSmith API Key</Label>
+              <Label htmlFor="apiKey">Server API key</Label>
               <p className="text-muted-foreground text-sm">
-                This is <strong>NOT</strong> required if using a local LangGraph
-                server. This value is stored in your browser's local storage and
-                is only used to authenticate requests sent to your LangGraph
-                server.
+                This is <strong>NOT</strong> required if using a local server.
+                This value is stored in your browser's local storage and is
+                only used to authenticate requests sent to your server.
               </p>
               <PasswordInput
                 id="apiKey"
                 name="apiKey"
                 defaultValue={apiKey ?? ""}
                 className="bg-card"
-                placeholder="lsv2_pt_..."
               />
             </div>
 
@@ -336,10 +332,10 @@ export const StreamProvider: React.FC<{ children: ReactNode }> = ({
               <div className="flex items-center justify-between gap-4">
                 <div className="flex flex-col gap-1">
                   <Label htmlFor="agentBuilderEnabled">
-                    Built with Agent Builder
+                    Use a server API key
                   </Label>
                   <p className="text-muted-foreground text-sm">
-                    Enable this for Agent Builder deployments.
+                    Turn this on when the server expects an API key.
                   </p>
                 </div>
                 <Switch

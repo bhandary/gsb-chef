@@ -19,8 +19,7 @@ const newsreader = Newsreader({
 
 export const metadata: Metadata = {
   title: "GSB Chef",
-  description:
-    "Gaud Saraswat Brahmin Konkani recipe chat, using LangChain Agent Chat UI",
+  description: "Gaud Saraswat Brahmin Konkani recipe chat",
 };
 
 export default function RootLayout({

@@ -12,7 +12,6 @@ import {
   DO_NOT_RENDER_ID_PREFIX,
   ensureToolCallsHaveResponses,
 } from "@/lib/ensure-tool-responses";
-import { LangGraphLogoSVG } from "../icons/langgraph";
 import { TooltipIconButton } from "./tooltip-icon-button";
 import {
   ArrowDown,
@@ -183,7 +182,10 @@ export function Thread() {
       return;
     }
     try {
-      const message = (stream.error as any).message;
+      const message = String((stream.error as { message?: string }).message || "")
+        .replace(/LangGraph/g, "recipe")
+        .replace(/LangChain/g, "recipe")
+        .replace(/LangSmith/g, "server");
       if (!message || lastError.current === message) {
         // Message has already been logged. do not modify ref, return early.
         return;
@@ -386,10 +388,6 @@ export function Thread() {
                     damping: 30,
                   }}
                 >
-                  <LangGraphLogoSVG
-                    width={32}
-                    height={32}
-                  />
                   <span className="font-heading text-xl font-semibold tracking-tight">
                     GSB Chef
                   </span>
@@ -465,7 +463,6 @@ export function Thread() {
                 <div className="bg-background sticky bottom-0 flex flex-col items-center gap-8">
                   {!chatStarted && (
                     <div className="flex items-center gap-3">
-                      <LangGraphLogoSVG className="h-8 flex-shrink-0" />
                       <h1 className="font-heading text-2xl font-semibold tracking-tight">
                         GSB Chef
                       </h1>
