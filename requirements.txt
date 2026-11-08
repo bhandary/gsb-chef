@@ -1,0 +1,14 @@
+langchain==1.4.8
+langchain-openai==1.7.3
+tavily-python==0.8.5
+python-dotenv==1.2.4
+langgraph-cli[inmem]==0.4.40
+langsmith==0.14.17
+argon2-cffi==25.1.0
+starlette==1.10.0
+uvicorn==0.54.0
+pytest==9.2.0
+httpx==0.28.1
+hypothesis==6.170.14
+authlib==1.6.5
+python-multipart==0.0.20
