@@ -17,9 +17,12 @@ def test_agent_proxy_session_check():
 
 def test_langgraph_proxy_route_calls_the_session_check():
     route = (ROOT / "web/src/app/api/[..._path]/route.ts").read_text()
+    feedback = (ROOT / "web/src/app/api/feedback/route.ts").read_text()
     guard = (ROOT / "web/src/lib/agent-proxy-auth.mjs").read_text()
     callback = (ROOT / "web/src/app/api/auth/google/callback/route.ts").read_text()
     assert "authorizeAgentProxy" in route
+    assert "authorizeAgentProxy" in feedback
+    assert "/feedback" in feedback
     assert "passthrough.GET" in route
     assert "Sign in required." in guard
     assert "gsb_session" in guard

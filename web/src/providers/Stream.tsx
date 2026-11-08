@@ -5,6 +5,7 @@ import React, {
   useState,
   useEffect,
   useMemo,
+  useRef,
 } from "react";
 import { useStream } from "@langchain/langgraph-sdk/react";
 import { type Message } from "@langchain/langgraph-sdk";
@@ -50,6 +51,26 @@ type StreamContextType = ReturnType<typeof useTypedStream> & {
   apiUrl: string;
 };
 const StreamContext = createContext<StreamContextType | undefined>(undefined);
+
+const TraceIdContext = createContext<Record<string, string>>({});
+
+export function useMessageTraceIds(): Record<string, string> {
+  return useContext(TraceIdContext);
+}
+
+const ThreadHistoryContext = createContext<unknown[]>([]);
+
+export function useThreadHistoryStates(): unknown[] {
+  return useContext(ThreadHistoryContext);
+}
+
+function readStreamHistory(stream: { history?: unknown }): unknown[] {
+  try {
+    return Array.isArray(stream.history) ? stream.history : [];
+  } catch {
+    return [];
+  }
+}
 
 type ProviderKeyContextType = {
   apiUrl: string;
@@ -109,6 +130,12 @@ const StreamSession = ({
     if (providerKeys.tavily) headers["X-Tavily-Api-Key"] = providerKeys.tavily;
     return headers;
   }, [authScheme, providerKeys.openai, providerKeys.tavily]);
+  const messagesRef = useRef<Message[]>([]);
+  const idsBeforeRun = useRef<Set<string>>(new Set());
+  const activeRunId = useRef<string | null>(null);
+  const [traceByMessageId, setTraceByMessageId] = useState<Record<string, string>>(
+    {},
+  );
   const streamValue = useTypedStream({
     apiUrl,
     apiKey: apiKey ?? undefined,
@@ -116,6 +143,12 @@ const StreamSession = ({
     defaultHeaders,
     threadId: threadId ?? null,
     fetchStateHistory: true,
+    onCreated: (run) => {
+      activeRunId.current = run.run_id;
+      idsBeforeRun.current = new Set(
+        messagesRef.current.flatMap((message) => (message.id ? [message.id] : [])),
+      );
+    },
     onCustomEvent: (event, options) => {
       if (isUIMessage(event) || isRemoveUIMessage(event)) {
         options.mutate((prev) => {
@@ -131,6 +164,25 @@ const StreamSession = ({
       sleep().then(() => getThreads().then(setThreads).catch(console.error));
     },
   });
+  messagesRef.current = streamValue.messages;
+  const threadHistory = readStreamHistory(streamValue);
+
+  useEffect(() => {
+    const runId = activeRunId.current;
+    if (!runId) return;
+    setTraceByMessageId((previous) => {
+      let changed = false;
+      const next = { ...previous };
+      for (const message of streamValue.messages) {
+        if (message.type !== "ai" || !message.id) continue;
+        if (idsBeforeRun.current.has(message.id)) continue;
+        if (next[message.id] === runId) continue;
+        next[message.id] = runId;
+        changed = true;
+      }
+      return changed ? next : previous;
+    });
+  }, [streamValue.messages]);
 
   useEffect(() => {
     checkGraphStatus(apiUrl, apiKey, authScheme).then((ok) => {
@@ -150,9 +202,13 @@ const StreamSession = ({
   }, [apiKey, apiUrl, authScheme]);
 
   return (
-    <StreamContext.Provider value={{ ...streamValue, apiUrl }}>
-      {children}
-    </StreamContext.Provider>
+    <TraceIdContext.Provider value={traceByMessageId}>
+      <ThreadHistoryContext.Provider value={threadHistory}>
+        <StreamContext.Provider value={{ ...streamValue, apiUrl }}>
+          {children}
+        </StreamContext.Provider>
+      </ThreadHistoryContext.Provider>
+    </TraceIdContext.Provider>
   );
 };
 

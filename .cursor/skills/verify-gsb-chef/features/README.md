@@ -29,3 +29,4 @@ Launch, doctor, evidence, and cleanup are specified in `../SKILL.md`. Keep the m
 - [Chat with the chef](./chef-chat.md) sends leftover ingredients and expects a recipe. This needs real OpenAI and Tavily keys.
 - [API keys in the gear menu](./provider-keys.md) stores OpenAI and Tavily keys in this browser.
 - [Missing-key error](./missing-key-error.md) shows the error when a chat is sent with no key.
+- [Thumbs feedback](./feedback.md) marks a finished chef reply up or down and records the request the UI sends.

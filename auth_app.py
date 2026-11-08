@@ -10,6 +10,7 @@ from starlette.responses import JSONResponse
 from starlette.routing import Route
 
 import auth
+import feedback
 import google_oidc
 
 
@@ -81,6 +82,35 @@ async def google_callback(request: Request) -> JSONResponse:
     return await google_oidc.finish(request)
 
 
+async def post_feedback(request: Request) -> JSONResponse:
+    try:
+        auth.current_user(_bearer(request))
+    except auth.AuthError as exc:
+        return _error(exc)
+    body = await _json_body(request)
+    if isinstance(body, JSONResponse):
+        return body
+    reaction = body.get("reaction")
+    trace_id = body.get("trace_id")
+    if reaction is not None and not isinstance(reaction, str):
+        return JSONResponse(
+            {"error": "reaction must be liked or disliked."},
+            status_code=400,
+        )
+    if trace_id is not None and not isinstance(trace_id, str):
+        trace_id = ""
+    try:
+        result = feedback.handle_feedback(
+            trace_id if isinstance(trace_id, str) else None,
+            reaction if isinstance(reaction, str) else None,
+        )
+    except feedback.FeedbackError as exc:
+        return JSONResponse({"error": exc.message}, status_code=exc.status_code)
+    if result is None:
+        return JSONResponse({"ok": True, "logged": False})
+    return JSONResponse({"ok": True, "logged": True})
+
+
 async def verify(request: Request) -> JSONResponse:
     body = await _json_body(request)
     if isinstance(body, JSONResponse):
@@ -102,6 +132,7 @@ app = Starlette(
         Route("/auth/google", google_status, methods=["GET"]),
         Route("/auth/google/start", google_start, methods=["GET"]),
         Route("/auth/google/callback", google_callback, methods=["POST"]),
+        Route("/feedback", post_feedback, methods=["POST"]),
     ]
 )
 

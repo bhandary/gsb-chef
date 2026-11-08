@@ -99,6 +99,18 @@ The UI sends them on each LangGraph request as `X-OpenAI-Api-Key` and `X-Tavily-
 
 If a field is blank, the agent uses `OPENAI_API_KEY` or `TAVILY_API_KEY` from the environment. Leave `LANGSMITH_TRACING` false unless you want traces to leave the machine.
 
+## Feedback
+
+Each finished chef reply can be marked thumbs up or thumbs down. The buttons call `POST /api/feedback` on the web origin. That route checks the `gsb_session` cookie, then the auth server checks the same session again and calls `langsmith.Client.create_feedback` with `key="user_sentiment"`, `score=1` for liked and `score=0` for disliked, and `trace_id` set to the LangGraph run id. Clicking the selected thumb again only clears the highlight. Nothing is sent.
+
+The trace id is the run id LangGraph assigns to that reply:
+
+- While the reply is streaming, `useStream`'s `onCreated` callback receives `{ run_id, thread_id }`. The UI remembers that run id for assistant messages that appear during the run.
+- After a reload, the stream provider reads the LangGraph `useStream().history` checkpoint list and uses `metadata.run_id` from the earliest checkpoint that still contains that assistant message. A normal run writes the run id on the checkpoint that first stores the reply. That getter is not copied when the stream object is spread, so the provider reads it directly.
+- `getMessagesMetadata(message).streamMetadata.run_id` is used only when the two sources above are absent. That field is the id attached to the streamed message and is not kept after a reload.
+
+LangSmith treats that root run id as the trace id when `LANGSMITH_TRACING=true`. Set `LANGSMITH_API_KEY` as well. Both stay in the server environment. If either is missing, the buttons still show when a run id is known, and the server responds `503` with `{"error":"feedback not configured"}`. The key is not included in that response.
+
 ## Tests
 
 ```bash

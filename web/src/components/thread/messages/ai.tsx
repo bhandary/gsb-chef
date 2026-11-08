@@ -15,6 +15,8 @@ import { ThreadView } from "../agent-inbox";
 import { useQueryState, parseAsBoolean } from "nuqs";
 import { GenericInterruptView } from "./generic-interrupt";
 import { useArtifact } from "../artifact";
+import { MessageFeedback, traceIdForAssistantMessage } from "./feedback";
+import { useMessageTraceIds, useThreadHistoryStates } from "@/providers/Stream";
 
 function CustomComponent({
   message,
@@ -116,6 +118,8 @@ export function AssistantMessage({
   );
 
   const thread = useStreamContext();
+  const traceByMessageId = useMessageTraceIds();
+  const history = useThreadHistoryStates();
   const isLastMessage =
     thread.messages[thread.messages.length - 1].id === message?.id;
   const hasNoAIOrToolMessages = !thread.messages.find(
@@ -125,6 +129,17 @@ export function AssistantMessage({
   const threadInterrupt = thread.interrupt;
 
   const parentCheckpoint = meta?.firstSeenState?.parent_checkpoint;
+  const traceId = traceIdForAssistantMessage({
+    messageId: message?.id,
+    liveRunId: message?.id ? traceByMessageId[message.id] : undefined,
+    history,
+    streamRunId: meta?.streamMetadata?.run_id,
+  });
+  const feedbackReady =
+    message?.type === "ai" &&
+    contentString.length > 0 &&
+    Boolean(traceId) &&
+    !(isLoading && isLastMessage);
   const anthropicStreamedToolCalls = Array.isArray(content)
     ? parseAnthropicStreamedToolCalls(content)
     : undefined;
@@ -191,12 +206,19 @@ export function AssistantMessage({
               isLastMessage={isLastMessage}
               hasNoAIOrToolMessages={hasNoAIOrToolMessages}
             />
-            <div
-              className={cn(
-                "mr-auto flex items-center gap-2 transition-opacity",
-                "opacity-0 group-focus-within:opacity-100 group-hover:opacity-100",
-              )}
-            >
+            <div className="mr-auto flex items-center gap-2">
+              {feedbackReady && traceId ? (
+                <MessageFeedback
+                  traceId={traceId}
+                  disabled={isLoading}
+                />
+              ) : null}
+              <div
+                className={cn(
+                  "flex items-center gap-2 transition-opacity",
+                  "opacity-0 group-focus-within:opacity-100 group-hover:opacity-100",
+                )}
+              >
               <BranchSwitcher
                 branch={meta?.branch}
                 branchOptions={meta?.branchOptions}
@@ -209,6 +231,7 @@ export function AssistantMessage({
                 isAiMessage={true}
                 handleRegenerate={() => handleRegenerate(parentCheckpoint)}
               />
+              </div>
             </div>
           </>
         )}
