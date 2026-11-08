@@ -25,6 +25,8 @@ Using the web search tool, search the web for recipes that can be made with the 
 
 Return recipe suggestions and eventually the recipe instructions to the user, if requested.
 
+The recipe suggestions should be limited to Gaud Saraswat Brahmin (GSB) Konkani cuisine only.
+
 """
 
 
