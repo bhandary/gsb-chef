@@ -10,6 +10,9 @@ import feedback
 TRACE = "11111111-1111-4111-8111-111111111111"
 
 
+PROJECT_ID = "22222222-2222-4222-8222-222222222222"
+
+
 class FakeClient:
     def __init__(self) -> None:
         self.calls: list[dict] = []
@@ -19,8 +22,23 @@ class FakeClient:
         return {"id": "feedback"}
 
 
+class ProjectClient(FakeClient):
+    def __init__(self, project_id: str | None = PROJECT_ID, fail: bool = False) -> None:
+        super().__init__()
+        self.project_id = project_id
+        self.fail = fail
+        self.lookups: list[str | None] = []
+
+    def read_project(self, *, project_name=None, **kwargs):
+        self.lookups.append(project_name)
+        if self.fail:
+            raise RuntimeError("lookup failed")
+        return type("Project", (), {"id": self.project_id})()
+
+
 @pytest.fixture()
 def database(tmp_path, monkeypatch):
+    feedback._reset_project_cache()
     monkeypatch.setenv("GSB_AUTH_DB", str(tmp_path / "auth.db"))
     monkeypatch.delenv("GSB_VERIFICATION_TTL_SECONDS", raising=False)
     monkeypatch.delenv("SMTP_HOST", raising=False)
@@ -94,6 +112,56 @@ def test_unconfigured_langsmith_does_not_call_the_client(database, monkeypatch):
     assert exc.value.status_code == 503
     assert exc.value.message == "feedback not configured"
     assert client.calls == []
+
+
+def test_session_id_is_the_project_id_and_the_lookup_is_cached(database, monkeypatch):
+    monkeypatch.setenv("LANGSMITH_PROJECT", "gsb-chef")
+    client = ProjectClient()
+    feedback.handle_feedback(TRACE, "liked", client=client)
+    feedback.handle_feedback(TRACE, "disliked", client=client)
+    assert client.lookups == ["gsb-chef"]
+    assert client.calls == [
+        {
+            "key": "user_sentiment",
+            "score": 1,
+            "trace_id": TRACE,
+            "session_id": PROJECT_ID,
+        },
+        {
+            "key": "user_sentiment",
+            "score": 0,
+            "trace_id": TRACE,
+            "session_id": PROJECT_ID,
+        },
+    ]
+
+
+def test_unset_project_uses_the_sdk_default_name(database, monkeypatch):
+    for name in (
+        "LANGSMITH_PROJECT",
+        "LANGCHAIN_PROJECT",
+        "LANGSMITH_SESSION",
+        "LANGCHAIN_SESSION",
+        "HOSTED_LANGSERVE_PROJECT_NAME",
+    ):
+        monkeypatch.delenv(name, raising=False)
+    client = ProjectClient()
+    feedback.handle_feedback(TRACE, "liked", client=client)
+    assert client.lookups == ["default"]
+    assert client.calls[0]["session_id"] == PROJECT_ID
+
+
+def test_feedback_is_sent_when_the_project_lookup_fails(database, caplog):
+    caplog.set_level(logging.WARNING, logger="gsb.feedback")
+    client = ProjectClient(fail=True)
+    feedback.handle_feedback(TRACE, "liked", client=client)
+    feedback.handle_feedback(TRACE, "disliked", client=client)
+    assert len(client.lookups) == 1
+    assert client.calls == [
+        {"key": "user_sentiment", "score": 1, "trace_id": TRACE},
+        {"key": "user_sentiment", "score": 0, "trace_id": TRACE},
+    ]
+    assert any("project lookup failed" in record.getMessage() for record in caplog.records)
 
 
 def test_unauthenticated_feedback_is_rejected(database):
