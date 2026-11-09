@@ -34,4 +34,5 @@ Preconditions:
 
 - Thumbs are omitted while that reply is still streaming, on tool-only messages, and when no run id is available.
 - The LangSmith key is read only by the auth server process. `launch.sh` sets `LANGSMITH_TRACING=false` on the LangGraph process. The auth process still needs `LANGSMITH_TRACING=true` and `LANGSMITH_API_KEY` before a click is stored. A missing setting is not a passing feedback write.
+- The agent server and the auth server must use the same `LANGSMITH_PROJECT`. When it is unset, both use the SDK default project name, `default`. The auth server looks that project up once and sends its id as `session_id`. A failed lookup still sends the feedback without a project id.
 - A real LangSmith row was not part of the skill's own proof run unless those variables were set and `list_feedback` showed the score.

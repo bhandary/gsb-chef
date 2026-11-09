@@ -111,6 +111,8 @@ The trace id is the run id LangGraph assigns to that reply:
 
 LangSmith treats that root run id as the trace id when `LANGSMITH_TRACING=true`. Set `LANGSMITH_API_KEY` as well. Both stay in the server environment. If either is missing, the buttons still show when a run id is known, and the server responds `503` with `{"error":"feedback not configured"}`. The key is not included in that response.
 
+The auth server resolves the project with `langsmith.utils.get_tracer_project` (`LANGSMITH_PROJECT`, or the SDK default name `default` when that is unset), looks the project up once with `read_project`, and passes its id as `session_id` on `create_feedback`. The agent server and the auth server must use the same `LANGSMITH_PROJECT`, so the feedback lands on the project that holds the trace. If that lookup fails, the click is still sent without a project id.
+
 ## Tests
 
 ```bash
