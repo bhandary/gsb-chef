@@ -25,14 +25,14 @@ Preconditions:
 - Launch Chrome with `channel: "chrome"` and args `--no-sandbox` and `--disable-dev-shm-usage`, from `@playwright/test` resolved via `createRequire(<repo>/web/package.json)`.
 
 - **Signed-out gate.** Go to `http://127.0.0.1:3000/`. Wait for the label `Email`. The ingredient placeholder is absent. `GET /api/auth/me` returns 401 and `{"error":"Sign in required."}`.
-- **Unverified sign-in.** Create a second account, `gsb-unverified@example.com` / `verify-skill-pass`, with Create account, and do not open its log link. Click the button `Sign in` to switch mode, fill that email and password, and click the submit button named `Sign in`. The page shows `Verify your email before signing in.` The composer is still absent.
-- **Verified sign-in.** Complete `signup-and-verification.md` for `gsb-verify@example.com`. Click `Sign out`. Wait until the label `Email` is back. Switch to Sign in, fill `gsb-verify@example.com` and `verify-skill-pass`, and submit `Sign in`. The ingredient placeholder returns.
+- **Unverified sign-in.** Create a second account, `gsb-unverified@example.com` / `verify-skill-pass`, with Create account, and do not open its log link. Click the button `Sign in` to switch mode. While the submit button still reads `Create account`, that is the only button named `Sign in`. After the switch, two buttons are named `Sign in`, so fill the email and password and click `button[type="submit"]`. The page shows `Verify your email before signing in.` The composer is still absent.
+- **Verified sign-in.** Complete `signup-and-verification.md` for `gsb-verify@example.com`. Click `Sign out`. Wait until the label `Email` is back. Switch to Sign in, fill `gsb-verify@example.com` and `verify-skill-pass`, and click `button[type="submit"]`. The ingredient placeholder returns.
 - **Session survives reload.** Reload `http://127.0.0.1:3000/`. The placeholder is visible without submitting the form again. `GET /api/auth/me` returns 200 and the email.
 - **Sign out.** Click `Sign out`. The Email label returns and `GET /api/auth/me` returns 401.
 
 ## Gotchas
 
-- Two controls are named `Sign in`: the mode button and, after the mode switches, the submit button. Click the mode button first. The submit button reads `Create account` while Sign up is selected.
+- Two controls are named `Sign in`: the mode button and, after the mode switches, the submit button. Click the mode button first. The submit button reads `Create account` while Sign up is selected. After the switch, submit with `button[type="submit"]`. A strict role query for the name `Sign in` then matches two buttons.
 - `gsb_session` is httpOnly. A check of `document.cookie` misses a valid session. Use the Playwright cookie jar or `/api/auth/me`.
 - Signing in before verification does not consume the verification token. The log link still works afterward.
 - Wrong password text is `Invalid email or password.` Do not treat that as the unverified-email result.
