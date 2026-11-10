@@ -33,10 +33,11 @@ The script creates `verification-runs/<UTC stamp>/` with an empty `data/` direct
 
 ```bash
 SMTP_HOST= SMTP_PASSWORD= APP_BASE_URL=http://127.0.0.1:3000 \
+  GOOGLE_CLIENT_ID= GOOGLE_CLIENT_SECRET= GOOGLE_DISCOVERY_URL= \
   GSB_AUTH_DB="$RUN/data/auth.db" AUTH_HOST=127.0.0.1 AUTH_PORT=8000 \
   .venv/bin/python -m auth_app
 
-LANGSMITH_TRACING=false LANGCHAIN_TRACING_V2=false \
+SMTP_HOST= LANGSMITH_TRACING=false LANGCHAIN_TRACING_V2=false \
   .venv/bin/langgraph dev --no-browser --host 127.0.0.1 --port 2024
 
 cd web
@@ -80,6 +81,7 @@ It passes only when:
 - Each recorded process-group leader is alive.
 - Listeners on 8000, 2024, and 3000 are that launch's auth, langgraph, and web groups. Ownership is the process group or a parent pid, from `/proc`, not the process name.
 - The auth, langgraph, web, and `/api/auth/me` checks from Launch still hold.
+- `GET http://127.0.0.1:3000/api/ok` with no cookie returns 401 and `{"error":"Sign in required."}`.
 
 A passing doctor prints `DOCTOR OK`. Anything else prints `DOCTOR FAIL` and exits 1. Do not drive a `DOCTOR FAIL` instance.
 
@@ -109,7 +111,7 @@ Stable handles:
 | Sign-up mode | button `Sign up` |
 | Sign-in mode | button `Sign in` |
 | Submit a new account | button `Create account` |
-| Submit an existing account | button `Sign in` (the submit button; the mode button has the same name, so prefer `Create account` for sign-up) |
+| Submit an existing account | `button[type="submit"]` named `Sign in`. After Sign in mode is selected, a role query for `Sign in` also matches the mode button. |
 | In-flight submit | button `Please wait` |
 | Log delivery notice | text `Account created. Open the verification link printed in the auth server log.` |
 | SMTP delivery notice | text `Account created. Open the verification link in your email.` |
@@ -137,7 +139,17 @@ The sign-up journey is one command:
 bash .cursor/skills/verify-gsb-chef/scripts/drive-signup.sh
 ```
 
-It uses `gsb-verify@example.com` and `verify-skill-pass` unless `VERIFY_EMAIL` and `VERIFY_PASSWORD` are set. It refuses to run when that database already has a user, token, or session row. The other feature files in `features/` are the recipes for the rest of the map. Run them in the same Chrome launch, against the same base URL, after this journey or from a fresh launch as their preconditions say.
+It uses `gsb-verify@example.com` and `verify-skill-pass` unless `VERIFY_EMAIL` and `VERIFY_PASSWORD` are set. It refuses to run when that database already has a user, token, or session row.
+
+Thumbs feedback on that same launch, after sign-up, is:
+
+```bash
+bash .cursor/skills/verify-gsb-chef/scripts/drive-feedback.sh
+```
+
+It signs in as the same user, seeds a thread whose checkpoint has a run id, and records the thumbs request. With the launch defaults the auth server answers 503 `{"error":"feedback not configured"}`. The script then fulfills one later response so it can record the pressed style and the clear click. It does not send a LangSmith key.
+
+The other feature files in `features/` are the recipes for the rest of the map. Run them in the same Chrome launch, against the same base URL, after this journey or from a fresh launch as their preconditions say.
 
 If a step needs an OpenAI or Tavily key and neither the root `.env` nor the gear menu has one, stop and report that. Do not invent a key, do not request a real key, and do not treat the missing-key toast as a successful recipe.
 
@@ -156,6 +168,8 @@ Artifacts go in the `evidence_dir` from `instance.json`, which is `verification-
 - `me.json`, `GET /api/auth/me` (`200` and the email)
 - `session-cookie-sha256.txt`, sha256 of the `gsb_session` cookie value
 - `db-rows.txt` and `proof.txt`
+
+`drive-feedback.sh` writes `feedback-seed.json`, `feedback-unpressed.png`, `feedback-unconfigured.png`, `feedback-pressed.png`, and `feedback-proof.txt`. The proof records the checkpoint run id sent as `trace_id`, the 503 `feedback not configured` response, that the request carried `gsb_session`, the pressed style after a fulfilled `200`, a clear click that sends nothing, and a signed-out `401`.
 
 The database proof reads `$RUN/data/auth.db` and requires:
 
@@ -181,14 +195,15 @@ After a failed launch or a failed drive, run this before starting another attemp
 
 ## Helpers
 
-All four scripts live in `.cursor/skills/verify-gsb-chef/scripts/` and are executable.
+The scripts live in `.cursor/skills/verify-gsb-chef/scripts/` and are executable.
 
 ```bash
 bash .cursor/skills/verify-gsb-chef/scripts/launch.sh
 bash .cursor/skills/verify-gsb-chef/scripts/doctor.sh
 bash .cursor/skills/verify-gsb-chef/scripts/drive-signup.sh
+bash .cursor/skills/verify-gsb-chef/scripts/drive-feedback.sh
 bash .cursor/skills/verify-gsb-chef/scripts/cleanup.sh
 python3 .cursor/skills/verify-gsb-chef/scripts/ports.py listeners 8000 2024 3000
 ```
 
-`ports.py` is the read-only listener lookup used by launch and doctor. `drive-signup.sh` calls `drive-signup.mjs`. Do not invoke the `.mjs` file on its own; it expects `WEB_PACKAGE`, `VERIFY_BASE_URL`, `VERIFY_EMAIL`, `VERIFY_PASSWORD`, `VERIFY_AUTH_LOG`, and `VERIFY_EVIDENCE` from the shell wrapper.
+`ports.py` is the read-only listener lookup used by launch and doctor. `drive-signup.sh` calls `drive-signup.mjs`. Do not invoke the `.mjs` file on its own; it expects `WEB_PACKAGE`, `VERIFY_BASE_URL`, `VERIFY_EMAIL`, `VERIFY_PASSWORD`, `VERIFY_AUTH_LOG`, and `VERIFY_EVIDENCE` from the shell wrapper. `drive-feedback.sh` calls `drive-feedback.mjs` with `WEB_PACKAGE`, `VERIFY_BASE_URL`, `VERIFY_EMAIL`, `VERIFY_PASSWORD`, and `VERIFY_EVIDENCE`.
