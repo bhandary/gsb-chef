@@ -33,10 +33,11 @@ The script creates `verification-runs/<UTC stamp>/` with an empty `data/` direct
 
 ```bash
 SMTP_HOST= SMTP_PASSWORD= APP_BASE_URL=http://127.0.0.1:3000 \
+  GOOGLE_CLIENT_ID= GOOGLE_CLIENT_SECRET= GOOGLE_DISCOVERY_URL= \
   GSB_AUTH_DB="$RUN/data/auth.db" AUTH_HOST=127.0.0.1 AUTH_PORT=8000 \
   .venv/bin/python -m auth_app
 
-LANGSMITH_TRACING=false LANGCHAIN_TRACING_V2=false \
+SMTP_HOST= LANGSMITH_TRACING=false LANGCHAIN_TRACING_V2=false \
   .venv/bin/langgraph dev --no-browser --host 127.0.0.1 --port 2024
 
 cd web
@@ -79,7 +80,12 @@ It passes only when:
 - `git rev-parse HEAD` equals the HEAD recorded at launch.
 - Each recorded process-group leader is alive.
 - Listeners on 8000, 2024, and 3000 are that launch's auth, langgraph, and web groups. Ownership is the process group or a parent pid, from `/proc`, not the process name.
-- The auth, langgraph, web, and `/api/auth/me` checks from Launch still hold.
+- `GET` auth `/auth/me` is 401 and `{"error":"Sign in required."}`.
+- `GET` langgraph `/ok` is 200 and `ok` is true.
+- `POST` langgraph `/assistants/search` with `{}` is 200 and includes a row whose `graph_id` is `agent`. Launch also requires that row's `name` to be `agent`. Doctor checks `graph_id`.
+- `GET` the web origin `/` is 200 and the body contains `<title>GSB Chef</title>`.
+- `GET /api/auth/me` is 401 and `{"error":"Sign in required."}`.
+- `GET /api/ok` with no cookie is 401 and `{"error":"Sign in required."}`.
 
 A passing doctor prints `DOCTOR OK`. Anything else prints `DOCTOR FAIL` and exits 1. Do not drive a `DOCTOR FAIL` instance.
 
