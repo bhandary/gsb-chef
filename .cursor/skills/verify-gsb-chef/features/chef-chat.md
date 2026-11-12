@@ -1,17 +1,17 @@
 # Chat with the chef
 
-A signed-in user lists leftover ingredients, sends them, and reads a recipe suggestion from the agent.
+A signed-in user lists leftover ingredients, sends them, and reads a recipe suggestion from the agent. The agent is instructed to suggest only Gaud Saraswat Brahmin (GSB) Konkani recipes.
 
 ## Sub-features
 
-- `composer` shows the ingredient box and Send after a verified session.
+- `composer` shows the ingredient box and Send after a verified session. The box is a textarea about four lines tall.
 - `send-ingredients` submits the text the user typed.
 - `recipe-reply` shows the agent's recipe text in the thread.
 
 ## How to get to it (user POV)
 
 - Sign up and open the verification link, or sign in, so the chat replaces the account form.
-- Type leftover ingredients into the box whose placeholder is `List leftover ingredients, for example rice, coconut, and curry leaves`.
+- Type leftover ingredients into the box whose placeholder is `List leftover ingredients, for example rice, coconut, and curry leaves`. The empty box is about four lines tall and grows with the text.
 - Choose Send.
 
 ## Driving it with Playwright
@@ -25,7 +25,7 @@ Preconditions:
 - **Focus the composer.** Wait for the placeholder `List leftover ingredients, for example rice, coconut, and curry leaves`.
 - **Enter ingredients.** Fill that textbox with `rice, coconut, and curry leaves`. The button `Send` becomes enabled.
 - **Send.** Click `Send`. The button label becomes `Cancel` while the run is in progress.
-- **Read the reply.** Wait until `Cancel` is gone and the thread contains a reply that is not the user's ingredient line. Screenshot the thread into the run's `evidence/chef-reply.png`.
+- **Read the reply.** Wait until `Cancel` is gone and the thread contains a reply that is not the user's ingredient line. That reply is the agent's GSB Konkani recipe suggestion. Screenshot the thread into the run's `evidence/chef-reply.png`.
 - **Record the failure if the provider rejects the key.** A toast titled `An error occurred. Please try again.` whose description names `OpenAI request failed` or `Tavily search failed` means the request was sent and the provider refused it. Save the toast text. That is not a recipe proof.
 
 ## Gotchas
