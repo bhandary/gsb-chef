@@ -22,7 +22,7 @@ Preconditions:
 - The launch script does not export either key. A root `.env` that contains one is still loaded by `langgraph dev` and counts as present.
 
 - **Send.** Wait for the ingredient placeholder. Fill `rice and coconut`. Click `Send`.
-- **Read the toast.** A toast titled `An error occurred. Please try again.` appears, and its description contains `OPENAI_API_KEY is missing. Enter it in the chat settings or set OPENAI_API_KEY in the environment.`
+- **Read the toast.** In the notifications region (`role` `region`, name `Notifications alt+T`), a toast titled `An error occurred. Please try again.` appears, and its description contains `OPENAI_API_KEY is missing. Enter it in the chat settings or set OPENAI_API_KEY in the environment.`
 - **Save the text.** Write the toast description into the run's `evidence/missing-key-toast.txt` and screenshot `evidence/missing-key-toast.png`.
 - **Stop there.** Do not fill the gear menu with a made-up key and send again in order to get a different error.
 
@@ -31,4 +31,5 @@ Preconditions:
 - A toast that says `using the request API key ending in` or `using the environment API key ending in` means a key was present. That is not this feature. Report the source word and the last four characters only.
 - Tavily is not consulted when the OpenAI key is already missing. Do not expect a Tavily message on this path.
 - The composer error is a toast, not the red account-form paragraph.
+- That same sentence is copied into the Next.js dev error container `#nextjs__container_errors_desc`. A page-wide text locator matches the toast and that container. Read the description from the notifications region.
 - This path does not verify that the chef can produce a recipe.
