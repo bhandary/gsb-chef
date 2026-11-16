@@ -13,14 +13,15 @@ A signed-in user marks a finished chef reply thumbs up or thumbs down. The click
 
 - Sign in so the chat is visible.
 - Open a thread whose assistant message was produced by a LangGraph run, or a thread whose checkpoint metadata `run_id` is that run's id.
-- The thumbs sit under the reply, next to the copy and refresh actions. Copy and refresh stay hidden until hover. The thumbs stay visible.
+- The thumbs sit under the reply, next to the actions named Copy content and Refresh. Copy content and Refresh stay hidden until hover. The thumbs stay visible.
 
 ## Driving it with Playwright
 
 Preconditions:
 
 - `DOCTOR OK`, and a verified session in this browser context. `drive-signup.sh` on this launch creates that session.
-- This feature does not require an OpenAI or Tavily key. A state update alone does not attach a run id, and thumbs stay hidden without one.
+- The assistant message is already in the thread. This feature does not require an OpenAI or Tavily key.
+- Do not seed with only `POST /threads/{thread_id}/state`. That checkpoint stores the messages, and its `metadata` has no `run_id`, because a state update alone does not attach one. The thumbs are not rendered.
 - Do not put `LANGSMITH_API_KEY` into the page, a screenshot, or a log.
 
 From the repo root, after sign-up:
@@ -34,9 +35,12 @@ The script signs in, seeds the thread, and writes the evidence below. The seed s
 - **Create the thread.** `POST http://127.0.0.1:2024/threads` with `metadata.graph_id` set to `agent`. Without that field, `POST /threads/{id}/state` returns 400 because the thread has no graph.
 - **Post the reply.** `POST /threads/{id}/state` with a human message and an assistant message whose content is text. That checkpoint has `metadata.source` `update` and no `run_id`.
 - **Stamp a run id.** `POST /threads/{id}/runs/wait` with `assistant_id` `agent` and one more human message. The run may fail with the missing `OPENAI_API_KEY` error. The input checkpoint still contains the seeded assistant message, and its `metadata.run_id` is a UUID. That UUID is the `trace_id` the UI sends.
+
+Creating the run that owns the reply is a separate seed, and it does not call the model. `POST /assistants/search` with `{}` and use the row whose `graph_id` and `name` are `agent`. `POST /threads`, then `POST /threads/{thread_id}/runs/wait` with that row's `assistant_id`, `interrupt_before` set to `["model"]`, and `input.messages` containing one human message and one assistant message with text. The `model` node does not run, so OpenAI and Tavily are not called. The history checkpoint that contains the assistant text has `metadata.run_id`. That value is a UUID, and it is the `trace_id` the UI sends.
+
 - **Open the thread.** Go to `/?threadId=<id>` and wait for the assistant text.
 - **See both thumbs.** Wait for the buttons `Thumbs up` and `Thumbs down`. Neither has `aria-pressed="true"`. Screenshot that state.
-- **Click one.** Click `Thumbs up`. Read the `POST /api/feedback` request body and the response status and body.
+- **Click one.** Click `Thumbs up`. The `POST /api/feedback` body is `{"reaction":"liked","trace_id":"<that run id>"}`. Thumbs down sends `"reaction":"disliked"`. Read the response status and body.
 - **Selected state.** When the response is `200` and `logged` is true, the button stays pressed. Screenshot it. When the response is `feedback not configured`, the button returns to unpressed and a toast says `Could not save feedback`. To screenshot the pressed style without a LangSmith key, fulfill a later `/api/feedback` response as `200` `{"ok":true,"logged":true}` and click again.
 - **Clear.** Click the same thumb again. No further `/api/feedback` request is sent, and `aria-pressed` is false.
 - **Signed out.** `POST /api/feedback` with no cookie returns `401` `{"error":"Sign in required."}`.

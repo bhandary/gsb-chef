@@ -80,7 +80,11 @@ It passes only when:
 - `git rev-parse HEAD` equals the HEAD recorded at launch.
 - Each recorded process-group leader is alive.
 - Listeners on 8000, 2024, and 3000 are that launch's auth, langgraph, and web groups. Ownership is the process group or a parent pid, from `/proc`, not the process name.
-- The auth, langgraph, web, and `/api/auth/me` checks from Launch still hold.
+- `GET` auth `/auth/me` is 401 and `{"error":"Sign in required."}`.
+- `GET` langgraph `/ok` is 200 and `ok` is true.
+- `POST` langgraph `/assistants/search` with `{}` is 200 and includes a row whose `graph_id` is `agent`. Launch also requires that row's `name` to be `agent`. Doctor checks `graph_id`.
+- `GET` the web origin `/` is 200 and the body contains `<title>GSB Chef</title>`.
+- `GET /api/auth/me` is 401 and `{"error":"Sign in required."}`.
 - `GET http://127.0.0.1:3000/api/ok` with no cookie returns 401 and `{"error":"Sign in required."}`.
 
 A passing doctor prints `DOCTOR OK`. Anything else prints `DOCTOR FAIL` and exits 1. Do not drive a `DOCTOR FAIL` instance.
